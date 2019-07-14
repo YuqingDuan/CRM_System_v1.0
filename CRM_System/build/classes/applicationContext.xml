@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 开启属性注入的注解 -->
+	<context:annotation-config />
+
+	<!-- 引入外部属性文件 jdbc.properties -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置C3P0连接池 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="driverClass" value="${jdbc.driverClass}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+
+	<!-- 配置生成SessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 配置Hibernate的属性 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		<!-- 加载映射文件 -->
+		<property name="mappingResources">
+			<list>
+				<value>cn/hfut/ssh/domain/User.hbm.xml</value>
+				<value>cn/hfut/ssh/domain/Customer.hbm.xml</value>
+				<value>cn/hfut/ssh/domain/BaseDict.hbm.xml</value>
+				<value>cn/hfut/ssh/domain/LinkMan.hbm.xml</value>
+				<value>cn/hfut/ssh/domain/SaleVisit.hbm.xml</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- 配置用户管理的相关的类 -->
+	<bean id="userAction" class="cn.hfut.ssh.web.action.UserAction"
+		scope="prototype">
+		<property name="userService" ref="userService" />
+	</bean>
+
+	<bean id="userService" class="cn.hfut.ssh.service.impl.UserServiceImpl">
+		<property name="userDao" ref="userDao" />
+	</bean>
+
+	<bean id="userDao" class="cn.hfut.ssh.dao.impl.UserDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 配置客户管理的相关的类 -->
+	<bean id="customerAction" class="cn.hfut.ssh.web.action.CustomerAction"
+		scope="prototype">
+		<property name="customerService" ref="customerService" />
+	</bean>
+
+	<bean id="customerService" class="cn.hfut.ssh.service.impl.CustomerServiceImpl">
+		<property name="customerDao" ref="customerDao" />
+	</bean>
+
+	<bean id="customerDao" class="cn.hfut.ssh.dao.impl.CustomerDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 配置字典管理的相关的类 -->
+	<bean id="baseDictAction" class="cn.hfut.ssh.web.action.BaseDictAction"
+		scope="prototype">
+		<property name="baseDictService" ref="baseDictService" />
+	</bean>
+
+	<bean id="baseDictService" class="cn.hfut.ssh.service.impl.BaseDictServiceImpl">
+		<property name="baseDictDao" ref="baseDictDao" />
+	</bean>
+
+	<bean id="baseDictDao" class="cn.hfut.ssh.dao.impl.BaseDictDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 配置联系人的相关的类 -->
+	<bean id="linkManAction" class="cn.hfut.ssh.web.action.LinkManAction"
+		scope="prototype">
+		<property name="linkManService" ref="linkManService" />
+		<property name="customerService" ref="customerService" />
+	</bean>
+
+	<bean id="linkManService" class="cn.hfut.ssh.service.impl.LinkManServiceImpl">
+		<property name="linkManDao" ref="linkManDao" />
+	</bean>
+
+	<bean id="linkManDao" class="cn.hfut.ssh.dao.impl.LinkManDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 配置客户拜访记录管理相关类 前两种用注解最后DAO层的无法用注解 -->
+	<bean id="saleVisitAction" class="cn.hfut.ssh.web.action.SaleVisitAction"
+		scope="prototype">
+	</bean>
+
+	<bean id="saleVisitService" class="cn.hfut.ssh.service.impl.SaleVisitServiceImpl">
+	</bean>
+
+	<bean id="saleVisitDao" class="cn.hfut.ssh.dao.impl.SaleVisitDaoImpl">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+
+	<!-- 开启注解事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+</beans>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+	"http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+	<!-- 配置常量 -->
+	<constant name="struts.action.extension" value="action" />
+
+	<!-- 配置Struts2中所上传的文件的总大小5M -->
+	<constant name="struts.multipart.maxSize" value="5242880" />
+
+	<!-- 配置Action -->
+	<package name="crm" extends="struts-default" namespace="/">
+		<!-- 配置权限拦截器 -->
+		<interceptors>
+			<interceptor name="privilegeInterceptor"
+				class="cn.hfut.ssh.web.interceptor.PrivilegeInterceptor" />
+		</interceptors>
+
+		<!-- 配置全局页面跳转 -->
+		<global-results>
+			<result name="login">/login.jsp</result>
+		</global-results>
+
+		<!-- 配置用户管理的Action -->
+		<action name="user_*" class="userAction" method="{1}">
+			<result name="login">/login.jsp</result>
+			<result name="success" type="redirect">/index.jsp</result>
+			<interceptor-ref name="privilegeInterceptor">
+				<param name="excludeMethods">regist,login</param>
+			</interceptor-ref>
+			<interceptor-ref name="defaultStack" />
+		</action>
+
+		<!-- 配置客户管理的Action -->
+		<action name="customer_*" class="customerAction" method="{1}">
+			<result name="saveUI">/jsp/customer/add.jsp</result>
+			<result name="findAll">/jsp/customer/list.jsp</result>
+			<result name="saveSuccess" type="redirectAction">customer_findAll.action
+			</result>
+			<result name="deleteSuccess" type="redirectAction">customer_findAll.action
+			</result>
+			<result name="editSuccess">/jsp/customer/edit.jsp</result>
+			<result name="updateSuccess" type="redirectAction">customer_findAll.action
+			</result>
+			<!-- 配置workflow拦截器input跳转，如果用是上传了非法格式的文件，会自动走这里 -->
+			<result name="input">/jsp/customer/add.jsp</result>
+			<interceptor-ref name="privilegeInterceptor" />
+			<!-- 设置上传文件格式的约束 -->
+			<interceptor-ref name="defaultStack">
+				<param name="fileUpload.maximumSize">5242880</param>
+				<param name="fileUpload.allowedExtensions">.jpg,.png,.pdf</param>
+			</interceptor-ref>
+		</action>
+
+		<!-- 配置字典查询的Action -->
+		<action name="baseDict_*" class="baseDictAction" method="{1}">
+			<interceptor-ref name="privilegeInterceptor" />
+			<interceptor-ref name="defaultStack" />
+		</action>
+
+		<!-- 联系人的Action的配置 -->
+		<action name="linkMan_*" class="linkManAction" method="{1}">
+			<result name="findAll">/jsp/linkman/list.jsp</result>
+			<result name="saveUI">/jsp/linkman/add.jsp</result>
+			<result name="saveSuccess" type="redirectAction">linkMan_findAll.action
+			</result>
+			<result name="editSuccess">/jsp/linkman/edit.jsp</result>
+			<result name="updateSuccess" type="redirectAction">linkMan_findAll.action
+			</result>
+			<result name="deleteSuccess" type="redirectAction">linkMan_findAll.action
+			</result>
+			<interceptor-ref name="privilegeInterceptor" />
+			<interceptor-ref name="defaultStack" />
+		</action>
+
+		<!-- 客户拜访记录的Action的配置 -->
+		<action name="saleVisit_*" class="saleVisitAction" method="{1}">
+			<result name="findAll">/jsp/salevisit/list.jsp</result>
+			<result name="saveUI">/jsp/salevisit/add.jsp</result>
+			<result name="saveSuccess" type="redirectAction">saleVisit_findAll.action
+			</result>
+			<interceptor-ref name="privilegeInterceptor" />
+			<interceptor-ref name="defaultStack" />
+		</action>
+	</package>
+</struts>
